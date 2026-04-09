@@ -5,7 +5,7 @@ services:
   # ==================== BACKEND ====================
   backend:
     build:
-      context: ./task-backend
+      context: ../task-backend
       dockerfile: Dockerfile
     image: task-backend
     container_name: task-backend
@@ -22,7 +22,7 @@ services:
   # ==================== FRONTEND ====================
   frontend:
     build:
-      context: ./task-frontend
+      context: ../task-frontend
       dockerfile: Dockerfile
     image: task-frontend
     container_name: task-frontend
