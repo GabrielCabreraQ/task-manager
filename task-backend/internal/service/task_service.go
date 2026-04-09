@@ -10,20 +10,25 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+// TaskService contiene la lógica de negocio y usa el repositorio para persistencia.
 type TaskService struct {
 	repository repository.TaskRepository
 }
 
+// NewTaskService crea un servicio de tareas con el repositorio.
 func NewTaskService(repository repository.TaskRepository) *TaskService {
 	return &TaskService{repository: repository}
 }
 
-// CreateTask crea una nueva tarea
+// CreateTask valida los datos y crea una tarea nueva en la base de datos.
 func (s *TaskService) CreateTask(ctx context.Context, newTask model.CreateTask) (*model.Task, error) {
+
+	// Validación básica del título.
 	if len(newTask.Title) < 3 {
 		return nil, errors.New("el título debe tener al menos 3 caracteres")
 	}
 
+	// Construccion del modelo antes de persistirlo.
 	task := &model.Task{
 		Title:       newTask.Title,
 		Description: newTask.Description,
@@ -31,6 +36,7 @@ func (s *TaskService) CreateTask(ctx context.Context, newTask model.CreateTask) 
 		Completed:   false,
 	}
 
+	// Guarda la tarea en el repositorio.
 	err := s.repository.CreateTask(ctx, task)
 	if err != nil {
 		return nil, errors.New("error al guardar la tarea en la base de datos")
@@ -39,23 +45,26 @@ func (s *TaskService) CreateTask(ctx context.Context, newTask model.CreateTask) 
 	return task, nil
 }
 
-// UpdateTask actualiza una tarea existente
+// UpdateTask valida el ID, aplica cambios y devuelve la tarea actualizada.
 func (s *TaskService) UpdateTask(ctx context.Context, id string, update model.UpdateTask) (*model.Task, error) {
+
+	// Convierte el ID en el formato de MongoDB.
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, errors.New("ID de tarea inválido")
 	}
 
+	// Actualiza la tarea en el repositorio.
 	err = s.repository.UpdateTask(ctx, objectID, &update)
 	if err != nil {
 		return nil, errors.New("error al actualizar la tarea")
 	}
 
-	// Retornamos la tarea actualizada
+	// Devuelve la tarea actualizada.
 	return s.FindByID(ctx, id)
 }
 
-// FindByTag busca tareas por una etiqueta específica
+// FindByTag busca tareas que contienen la etiqueta indicada y devuelve resultados paginados.
 func (s *TaskService) FindByTag(ctx context.Context, tag string, page, limit int) (model.TaskList, error) {
 	tasks, total, err := s.repository.FindByTag(ctx, tag, page, limit)
 	if err != nil {
@@ -113,13 +122,14 @@ func (s *TaskService) MarkCompleted(ctx context.Context, id string) error {
 	return nil
 }
 
-// Delete elimina una tarea
+// Delete valida el ID y elimina la tarea correspondiente.
 func (s *TaskService) Delete(ctx context.Context, id string) error {
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return errors.New("ID de tarea inválido")
 	}
 
+	// Elimina la tarea del repositorio.
 	err = s.repository.Delete(ctx, objectID)
 	if err != nil {
 		return errors.New("error al eliminar la tarea")
