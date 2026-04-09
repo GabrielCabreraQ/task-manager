@@ -10,7 +10,7 @@ services:
     image: task-backend
     container_name: task-backend
     env_file:
-      - ../task-backend\.env
+      - ../task-backend/.env
     restart: always
     ports:
       - "8080:8080"
