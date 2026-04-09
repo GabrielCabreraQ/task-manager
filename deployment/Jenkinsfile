@@ -9,35 +9,35 @@ pipeline {
     }
 
     stages {
-        stage('Checkout Code') {
+        stage('Checkout code') {
             steps {
                 checkout scm
             }
         }
 
-        stage('Build Backend Image') {
+        stage('Build backend image') {
             steps {
-                dir('backend') {
+                dir('task-backend') {
                     bat "docker build -t ${IMAGE_BACKEND}:${TAG} -t ${IMAGE_BACKEND}:latest ."
                 }
             }
         }
 
-        stage('Build Frontend Image') {
+        stage('Build frontend image') {
             steps {
-                dir('frontend') {
+                dir('task-frontend') {
                     bat "docker build -t ${IMAGE_FRONTEND}:${TAG} -t ${IMAGE_FRONTEND}:latest ."
                 }
             }
         }
 
-        stage('Login to Docker Hub') {
+        stage('Login to docker hub') {
             steps {
                 bat "echo %DOCKER_CREDENTIALS_PSW% | docker login -u %DOCKER_CREDENTIALS_USR% --password-stdin"
             }
         }
 
-        stage('Push Images to Docker Hub') {
+        stage('Push images to docker hub') {
             steps {
                 bat "docker push ${IMAGE_BACKEND}:${TAG}"
                 bat "docker push ${IMAGE_BACKEND}:latest"
@@ -46,7 +46,7 @@ pipeline {
             }
         }
 
-        stage('Deploy Application') {
+        stage('Deploy application') {
             steps {
                 bat 'docker compose -f deployment/docker-compose.yml down --remove-orphans || true'
                 bat 'docker compose -f deployment/docker-compose.yml up -d --build'
