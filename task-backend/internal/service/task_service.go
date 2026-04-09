@@ -78,6 +78,8 @@ func (s *TaskService) FindAll(ctx context.Context, page, limit int) (model.TaskL
 	return model.TaskList{
 		Tasks: tasks,
 		Total: total,
+		Page:  page,
+		Limit: limit,
 	}, nil
 }
 

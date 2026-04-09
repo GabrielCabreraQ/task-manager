@@ -51,13 +51,21 @@ func (h *TaskHandler) GetAllTasks(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 
-	tasks, err := h.service.FindAll(c.Request.Context(), page, limit)
+	// Seguridad: evitar valores inválidos
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 || limit > 100 { // máximo 100 tareas por página
+		limit = 10
+	}
+
+	result, err := h.service.FindAll(c.Request.Context(), page, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, tasks)
+	c.JSON(http.StatusOK, result)
 }
 
 func (h *TaskHandler) GetTaskByID(c *gin.Context) {

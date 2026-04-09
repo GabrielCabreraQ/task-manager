@@ -2,12 +2,12 @@
   <div>
     <!-- Page Header -->
     <div class="page-header" style="margin-top:2rem">
-      <div class="page-eyebrow"> GESTIÓN DE TAREAS</div>
+      <div class="page-eyebrow">// GESTIÓN DE TAREAS</div>
       <h1 class="page-title">
-        Mis tareas
+        Mis<br />Tareas
       </h1>
       <p class="page-subtitle">
-        Organiza tu trabajo de forma eficiente y sin complicaciones. Crea, edita y gestiona tus tareas fácilmente.
+        Organiza, prioriza y completa tu trabajo de manera eficiente.
       </p>
     </div>
 
@@ -28,7 +28,6 @@
         </button>
       </div>
 
-      <!-- Error banner -->
       <div v-if="tasksStore.error" style="color:#ff4757;font-size:0.8rem;font-family:'Space Mono',monospace">
         <i class="fas fa-exclamation-circle"></i>
         {{ tasksStore.error }}
@@ -61,36 +60,38 @@
         <input
           :value="tasksStore.search"
           type="text"
-          placeholder="Buscar tareas…"
+          placeholder="Buscar en esta página…"
           @input="tasksStore.setSearch($event.target.value)"
         />
       </div>
     </div>
 
     <!-- Loader -->
-    <div v-if="tasksStore.loading && !tasksStore.tasks.length" class="tf-loader">
+    <div v-if="tasksStore.loading" class="tf-loader">
       <div class="spinner"></div>
       <span class="loader-text">CARGANDO TAREAS…</span>
     </div>
 
     <!-- Empty State -->
     <div
-      v-else-if="!tasksStore.loading && tasksStore.filteredTasks.length === 0"
+      v-else-if="tasksStore.visibleTasks.length === 0"
       class="empty-state"
     >
       <div class="empty-icon"><i class="fas fa-inbox"></i></div>
       <p class="empty-title">
-        {{ tasksStore.tasks.length === 0 ? "No hay tareas aún" : "Sin resultados" }}
+        {{ tasksStore.pagination.total === 0 ? "No hay tareas aún" : "Sin resultados en esta página" }}
       </p>
       <p class="empty-sub">
-        {{ tasksStore.tasks.length === 0 ? "Crea tu primera tarea usando el botón de arriba." : "Intenta ajustar los filtros." }}
+        {{ tasksStore.pagination.total === 0
+          ? "Crea tu primera tarea usando el botón de arriba."
+          : "Intenta ajustar los filtros o cambia de página." }}
       </p>
     </div>
 
     <!-- Task List -->
     <TransitionGroup v-else name="fade" tag="div" style="display:flex;flex-direction:column;gap:0.75rem">
       <TaskCard
-        v-for="task in tasksStore.paginatedTasks"
+        v-for="task in tasksStore.visibleTasks"
         :key="task._id || task.id"
         :task="task"
         @complete="handleComplete"
@@ -100,15 +101,16 @@
       />
     </TransitionGroup>
 
-    <!-- ── Pagination + Page Size ───────────────────────────────────────── -->
-    <div v-if="tasksStore.filteredTasks.length > 0" class="pagination-bar">
+    <!-- ── Pagination bar ──────────────────────────────────────────────── -->
+    <div v-if="!tasksStore.loading && tasksStore.pagination.total > 0" class="pagination-bar">
 
-      <!-- Info -->
+      <!-- Rango e info total -->
       <span class="pagination-info">
-        {{ rangeStart }}–{{ rangeEnd }} de {{ tasksStore.filteredTasks.length }}
+        Mostrando {{ tasksStore.rangeStart }}–{{ tasksStore.rangeEnd }}
+        de <strong style="color:#b5f542">{{ tasksStore.pagination.total }}</strong> tareas
       </span>
 
-      <!-- Page size selector -->
+      <!-- Selector de tareas por página -->
       <div class="page-size-selector">
         <span class="page-size-label">Por página:</span>
         <div class="page-size-options">
@@ -117,6 +119,7 @@
             :key="size.value"
             class="size-btn"
             :class="{ 'is-active': tasksStore.pagination.limit === size.value }"
+            :disabled="tasksStore.loading"
             @click="tasksStore.setLimit(size.value)"
           >
             {{ size.label }}
@@ -124,42 +127,65 @@
         </div>
       </div>
 
-      <!-- Page navigation -->
+      <!-- Navegación de páginas -->
       <div v-if="tasksStore.totalPages > 1" class="tf-pagination" style="margin-top:0">
-        <!-- Prev -->
+        <!-- Primera página -->
         <button
           class="page-btn"
-          :disabled="tasksStore.pagination.page <= 1"
-          @click="tasksStore.setPage(tasksStore.pagination.page - 1)"
+          :disabled="tasksStore.pagination.page <= 1 || tasksStore.loading"
+          title="Primera página"
+          @click="tasksStore.setPage(1)"
         >
-          <i class="fas fa-chevron-left" style="font-size:0.7rem"></i>
+          <i class="fas fa-angle-double-left" style="font-size:0.65rem"></i>
         </button>
 
-        <!-- Pages con ellipsis -->
+        <!-- Anterior -->
+        <button
+          class="page-btn"
+          :disabled="tasksStore.pagination.page <= 1 || tasksStore.loading"
+          title="Página anterior"
+          @click="tasksStore.setPage(tasksStore.pagination.page - 1)"
+        >
+          <i class="fas fa-chevron-left" style="font-size:0.65rem"></i>
+        </button>
+
+        <!-- Números con ellipsis -->
         <template v-for="item in pageItems" :key="item.key">
           <span v-if="item.ellipsis" class="page-ellipsis">…</span>
           <button
             v-else
             class="page-btn"
             :class="{ 'is-active': tasksStore.pagination.page === item.page }"
+            :disabled="tasksStore.loading"
             @click="tasksStore.setPage(item.page)"
           >
             {{ item.page }}
           </button>
         </template>
 
-        <!-- Next -->
+        <!-- Siguiente -->
         <button
           class="page-btn"
-          :disabled="tasksStore.pagination.page >= tasksStore.totalPages"
+          :disabled="tasksStore.pagination.page >= tasksStore.totalPages || tasksStore.loading"
+          title="Página siguiente"
           @click="tasksStore.setPage(tasksStore.pagination.page + 1)"
         >
-          <i class="fas fa-chevron-right" style="font-size:0.7rem"></i>
+          <i class="fas fa-chevron-right" style="font-size:0.65rem"></i>
+        </button>
+
+        <!-- Última página -->
+        <button
+          class="page-btn"
+          :disabled="tasksStore.pagination.page >= tasksStore.totalPages || tasksStore.loading"
+          title="Última página"
+          @click="tasksStore.setPage(tasksStore.totalPages)"
+        >
+          <i class="fas fa-angle-double-right" style="font-size:0.65rem"></i>
         </button>
       </div>
     </div>
 
-    <!-- Create / Edit Modal -->
+    <!-- Modales -->
     <TaskModal
       :is-open="showModal"
       :task="editingTask"
@@ -167,7 +193,6 @@
       @submit="handleSubmit"
     />
 
-    <!-- Confirm Delete Modal -->
     <ConfirmModal
       :is-open="showConfirm"
       title="Eliminar tarea"
@@ -187,17 +212,16 @@ import { useToastStore  } from "~/store/toast";
 const tasksStore = useTasksStore();
 const toastStore = useToastStore();
 
-// ─── Fetch on mount ───────────────────────────────────────────────────────
 onMounted(() => tasksStore.fetchTasks());
 
-// ─── Filters ─────────────────────────────────────────────────────────────
+// ─── Filtros UI ───────────────────────────────────────────────────────────
 const filters = [
   { label: "Todas",       value: "all"       },
   { label: "Pendientes",  value: "pending"   },
   { label: "Completadas", value: "completed" },
 ];
 
-// ─── Page size options ────────────────────────────────────────────────────
+// ─── Tamaños de página ────────────────────────────────────────────────────
 const pageSizes = [
   { label: "1",   value: 1   },
   { label: "5",   value: 5   },
@@ -209,18 +233,7 @@ const pageSizes = [
   { label: "500", value: 500 },
 ];
 
-// ─── Pagination range info ────────────────────────────────────────────────
-const rangeStart = computed(() => {
-  const { page, limit } = tasksStore.pagination;
-  return Math.min((page - 1) * limit + 1, tasksStore.filteredTasks.length);
-});
-
-const rangeEnd = computed(() => {
-  const { page, limit } = tasksStore.pagination;
-  return Math.min(page * limit, tasksStore.filteredTasks.length);
-});
-
-// ─── Page items con ellipsis ──────────────────────────────────────────────
+// ─── Paginación con ellipsis ──────────────────────────────────────────────
 const pageItems = computed(() => {
   const total   = tasksStore.totalPages;
   const current = tasksStore.pagination.page;
@@ -231,25 +244,20 @@ const pageItems = computed(() => {
     return items;
   }
 
-  // Siempre mostrar primera página
   items.push({ key: 1, page: 1 });
-
   if (current > 3) items.push({ key: "e1", ellipsis: true });
 
-  // Páginas alrededor de la actual
   const start = Math.max(2, current - 1);
   const end   = Math.min(total - 1, current + 1);
   for (let i = start; i <= end; i++) items.push({ key: i, page: i });
 
   if (current < total - 2) items.push({ key: "e2", ellipsis: true });
-
-  // Siempre mostrar última página
   items.push({ key: total, page: total });
 
   return items;
 });
 
-// ─── Modal state ─────────────────────────────────────────────────────────
+// ─── Modal crear/editar ───────────────────────────────────────────────────
 const showModal   = ref(false);
 const editingTask = ref(null);
 
@@ -268,7 +276,6 @@ function closeModal() {
   editingTask.value = null;
 }
 
-// ─── Create / Update ─────────────────────────────────────────────────────
 async function handleSubmit(payload) {
   try {
     if (editingTask.value) {
@@ -285,18 +292,17 @@ async function handleSubmit(payload) {
   }
 }
 
-// ─── Complete ─────────────────────────────────────────────────────────────
+// ─── Completar ────────────────────────────────────────────────────────────
 async function handleComplete(task) {
   try {
-    const id = task._id || task.id;
-    await tasksStore.markCompleted(id);
+    await tasksStore.markCompleted(task._id || task.id);
     toastStore.success("¡Tarea completada!");
   } catch (e) {
     toastStore.error(e.message);
   }
 }
 
-// ─── Delete ──────────────────────────────────────────────────────────────
+// ─── Eliminar ─────────────────────────────────────────────────────────────
 const showConfirm  = ref(false);
 const deletingTask = ref(null);
 const deleting     = ref(false);
@@ -309,8 +315,7 @@ function openDelete(task) {
 async function handleDelete() {
   deleting.value = true;
   try {
-    const id = deletingTask.value._id || deletingTask.value.id;
-    await tasksStore.deleteTask(id);
+    await tasksStore.deleteTask(deletingTask.value._id || deletingTask.value.id);
     toastStore.success("Tarea eliminada");
     showConfirm.value  = false;
     deletingTask.value = null;
@@ -321,12 +326,10 @@ async function handleDelete() {
   }
 }
 
-// ─── SEO ──────────────────────────────────────────────────────────────────
-useHead({ title: "TaskManagment — Mis Tareas" });
+useHead({ title: "TaskFlow — Mis Tareas" });
 </script>
 
 <style scoped>
-/* ── Pagination bar ───────────────────────────────────────────────────── */
 .pagination-bar {
   display: flex;
   flex-direction: column;
@@ -344,7 +347,6 @@ useHead({ title: "TaskManagment — Mis Tareas" });
   letter-spacing: 0.06em;
 }
 
-/* ── Page size selector ───────────────────────────────────────────────── */
 .page-size-selector {
   display: flex;
   align-items: center;
@@ -379,10 +381,9 @@ useHead({ title: "TaskManagment — Mis Tareas" });
   border-radius: 3px;
   cursor: pointer;
   transition: all 0.15s ease;
-  letter-spacing: 0.03em;
   line-height: 1;
 
-  &:hover {
+  &:hover:not(:disabled) {
     border-color: #b5f542;
     color: #b5f542;
   }
@@ -393,9 +394,13 @@ useHead({ title: "TaskManagment — Mis Tareas" });
     border-color: #b5f542;
     font-weight: 700;
   }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
 }
 
-/* ── Ellipsis ─────────────────────────────────────────────────────────── */
 .page-ellipsis {
   font-family: "Space Mono", monospace;
   font-size: 0.75rem;

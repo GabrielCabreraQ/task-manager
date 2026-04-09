@@ -28,6 +28,8 @@ type CreateTask struct {
 type TaskList struct {
 	Tasks []Task `json:"tasks"`
 	Total int64  `json:"total"`
+	Page  int    `json:"page"`
+	Limit int    `json:"limit"`
 }
 
 // Para la actualización de tareas
