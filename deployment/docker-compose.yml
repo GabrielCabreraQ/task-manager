@@ -7,7 +7,7 @@ services:
     build:
       context: ../task-backend
       dockerfile: Dockerfile
-    image: gabrielcq/task-backend:lastest
+    image: gabrielcq/task-backend:latest
     container_name: task-backend
     env_file:
       - ../task-backend/.env.example
@@ -24,7 +24,7 @@ services:
     build:
       context: ../task-frontend
       dockerfile: Dockerfile
-    image: gabrielcq/task-frontend:lastest
+    image: gabrielcq/task-frontend:latest
     container_name: task-frontend
     restart: always
     ports:
