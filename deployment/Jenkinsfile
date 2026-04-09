@@ -48,7 +48,7 @@ pipeline {
 
         stage('Deploy application') {
             steps {
-                bat 'docker compose -f deployment/docker-compose.yml down --remove-orphans || true'
+                bat 'docker compose -f deployment/docker-compose.yml down --remove-orphans || echo "No containers to remove"'
                 bat 'docker compose -f deployment/docker-compose.yml up -d --build'
             }
         }
