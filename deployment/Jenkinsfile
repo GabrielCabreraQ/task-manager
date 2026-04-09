@@ -18,7 +18,7 @@ pipeline {
         stage('Build backend image') {
             steps {
                 dir('task-backend') {
-                    bat "docker build -t ${IMAGE_BACKEND}:${TAG} -t ${IMAGE_BACKEND}:latest ."
+                    bat "docker build -t ${IMAGE_BACKEND}:lastest -t ${IMAGE_BACKEND}:latest ."
                 }
             }
         }
@@ -26,7 +26,7 @@ pipeline {
         stage('Build frontend image') {
             steps {
                 dir('task-frontend') {
-                    bat "docker build -t ${IMAGE_FRONTEND}:${TAG} -t ${IMAGE_FRONTEND}:latest ."
+                    bat "docker build -t ${IMAGE_FRONTEND}:lastest -t ${IMAGE_FRONTEND}:latest ."
                 }
             }
         }
