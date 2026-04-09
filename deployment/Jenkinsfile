@@ -15,6 +15,12 @@ pipeline {
             }
         }
 
+        stage('Prepare .env files') {
+            steps {
+                bat 'copy task-backend\\.env.example task-backend\\.env || echo ".env.example no encontrado en backend"'
+            }
+        }
+        
         stage('Build backend image') {
             steps {
                 dir('task-backend') {
