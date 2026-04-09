@@ -3,56 +3,45 @@ pipeline {
 
     environment {
         DOCKER_CREDENTIALS = credentials('docker-credentials')
-        IMAGE_BACKEND  = "gabrielcq/task-backend"
-        IMAGE_FRONTEND = "gabrielcq/task-frontend"
-        TAG            = "${env.BUILD_NUMBER}"
+        IMAGE_BACKEND      = "gabrielcq/task-backend"
+        IMAGE_FRONTEND     = "gabrielcq/task-frontend"
     }
 
     stages {
-        stage('Checkout code') {
+        stage('Checkout') {
             steps {
                 checkout scm
             }
         }
 
-        stage('Prepare .env files') {
+        stage('Build Backend') {
             steps {
-                bat 'copy task-backend\\.env.example task-backend\\.env || echo ".env.example no encontrado en backend"'
-            }
-        }
-        
-        stage('Build backend image') {
-            steps {
-                dir('task-backend') {
-                    bat "docker build -t ${IMAGE_BACKEND}:lastest -t ${IMAGE_BACKEND}:latest ."
-                }
+                bat "docker build -t ${IMAGE_BACKEND}:latest -f task-backend/Dockerfile task-backend/"
             }
         }
 
-        stage('Build frontend image') {
+        stage('Build Frontend') {
             steps {
-                dir('task-frontend') {
-                    bat "docker build -t ${IMAGE_FRONTEND}:lastest -t ${IMAGE_FRONTEND}:latest ."
-                }
+                bat "docker build -t ${IMAGE_FRONTEND}:latest -f task-frontend/Dockerfile task-frontend/"
             }
         }
 
-        stage('Login to docker hub') {
+        stage('Login Docker Hub') {
             steps {
                 bat "echo %DOCKER_CREDENTIALS_PSW% | docker login -u %DOCKER_CREDENTIALS_USR% --password-stdin"
             }
         }
 
-        stage('Push images to docker hub') {
+        stage('Push Images') {
             steps {
                 bat "docker push ${IMAGE_BACKEND}:latest"
                 bat "docker push ${IMAGE_FRONTEND}:latest"
             }
         }
 
-        stage('Deploy application') {
+        stage('Deploy') {
             steps {
-                bat 'docker compose -f deployment/docker-compose.yml down --remove-orphans || echo "No containers to remove"'
+                bat 'docker compose -f deployment/docker-compose.yml down --remove-orphans || true'
                 bat 'docker compose -f deployment/docker-compose.yml up -d --build'
             }
         }
@@ -60,14 +49,13 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline completado'
+            echo 'Pipeline completado con éxito'
         }
         failure {
             echo 'Pipeline falló'
         }
         always {
-            bat 'docker logout' || true
+            bat 'docker logout || true'
         }
     }
 }
-
