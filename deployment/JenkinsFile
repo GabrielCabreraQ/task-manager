@@ -1,41 +1,72 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('docker-hub-credentials')  
+        IMAGE_BACKEND = "gabrielcq/task-backend"
+        IMAGE_FRONTEND = "gabrielcq/task-frontend"
+        TAG = "${env.BUILD_NUMBER}"   
+    }
+
     stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
+        stage('Npm install'){
+            steps{
+                bat 'npm install'
             }
         }
-        stage('Build Backend') {
+
+        stage('Build backend image') {
             steps {
-                dir('backend') {
-                    sh 'docker compose -f ../deployment/docker-compose.yml build backend'
+                {
+                    bat "docker build -t ${IMAGE_BACKEND}:${TAG} -t ${IMAGE_BACKEND}:latest ."
                 }
             }
         }
-        stage('Build Frontend') {
+
+        stage('Build frontend image') {
             steps {
-                dir('frontend') {
-                    sh 'docker compose -f ../deployment/docker-compose.yml build frontend'
+                {
+                    bat "docker build -t ${IMAGE_FRONTEND}:${TAG} -t ${IMAGE_FRONTEND}:latest ."
                 }
             }
         }
-        stage('Deploy') {
+
+        stage('Login to docker hub') {
             steps {
-                sh 'docker compose -f deployment/docker-compose.yml down || true'
-                sh 'docker compose -f deployment/docker-compose.yml up -d --build'
-                echo '🚀 Aplicación desplegada correctamente'
+                bat "echo %DOCKERHUB_CREDENTIALS_PSW% | docker login -u %DOCKERHUB_CREDENTIALS_USR% --password-stdin"
+            }
+        }
+
+        stage('Push images to docker hub') {
+            steps {
+                bat "docker push ${IMAGE_BACKEND}:${TAG}"
+                bat "docker push ${IMAGE_BACKEND}:latest"
+                bat "docker push ${IMAGE_FRONTEND}:${TAG}"
+                bat "docker push ${IMAGE_FRONTEND}:latest"
+            }
+        }
+
+        stage('Deploy Application') {
+            steps {
+                echo '🚀 Desplegando aplicación completa (Backend + Frontend + MongoDB)...'
+                bat 'docker compose -f deployment/docker-compose.yml down --remove-orphans || true'
+                bat 'docker compose -f deployment/docker-compose.yml up -d --build'
+                echo ' Aplicación desplegada correctamente en:'
+                echo '   → Frontend: http://localhost:3000'
+                echo '   → Backend:  http://localhost:8080'
             }
         }
     }
 
     post {
         success {
-            echo 'Pipeline exitoso'
+            echo 'Pipeline completado'
         }
         failure {
             echo 'Pipeline falló'
+        }
+        always {
+            bat 'docker logout'
         }
     }
 }
