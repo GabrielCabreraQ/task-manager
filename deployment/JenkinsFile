@@ -48,7 +48,6 @@ pipeline {
 
         stage('Deploy Application') {
             steps {
-                echo '🚀 Desplegando aplicación completa (Backend + Frontend + MongoDB)...'
                 bat 'docker compose -f deployment/docker-compose.yml down --remove-orphans || true'
                 bat 'docker compose -f deployment/docker-compose.yml up -d --build'
                 echo ' Aplicación desplegada correctamente en:'
