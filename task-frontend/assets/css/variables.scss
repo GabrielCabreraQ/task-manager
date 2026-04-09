@@ -1,0 +1,30 @@
+// Color palette — dark industrial with acid green accents
+$primary: #b5f542;
+$primary-dark: #8fcc00;
+$dark-bg: #0d0d0d;
+$surface: #161616;
+$surface-2: #1e1e1e;
+$surface-3: #2a2a2a;
+$border-color: #2e2e2e;
+$text-main: #f0f0f0;
+$text-muted: #888;
+$text-dim: #555;
+$danger: #ff4757;
+$success: #b5f542;
+$warning: #ffa502;
+$tag-bg: #1a2a0a;
+$tag-text: #b5f542;
+$tag-border: #3a5a1a;
+
+// Typography
+$font-display: "Space Mono", monospace;
+$font-body: "DM Sans", sans-serif;
+
+// Spacing
+$radius: 4px;
+$radius-md: 8px;
+$radius-lg: 12px;
+
+// Transitions
+$transition: 0.2s ease;
+$transition-slow: 0.4s cubic-bezier(0.16, 1, 0.3, 1);

@@ -1,0 +1,55 @@
+version: '3.9'
+
+services:
+
+  # ==================== BACKEND ====================
+  backend:
+    build:
+      context: ./task-backend
+      dockerfile: Dockerfile
+    image: task-backend
+    container_name: task-backend
+    env_file:
+      - ./task-backend/.env
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongodb
+    networks:
+      - task-network
+
+  # ==================== FRONTEND ====================
+  frontend:
+    build:
+      context: ./task-frontend
+      dockerfile: Dockerfile
+    image: task-frontend
+    container_name: task-frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - task-network
+
+  # ==================== MONGODB ====================
+  mongodb:
+    image: mongo:latest
+    container_name: task-mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: taskdb
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - task-network
+
+volumes:
+  mongodb_data:
+
+networks:
+  task-network:

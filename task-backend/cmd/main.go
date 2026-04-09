@@ -36,8 +36,8 @@ func main() {
 	log.Println("Conectado exitosamente a MongoDB")
 
 	// Inicializar base de datos y colección
-	db := client.Database("taskdb") // Nombre fijo de la base de datos
-	collection := db.Collection("task")
+	db := client.Database(cfg.MongoDB.DBName)
+	collection := db.Collection("tasks") // ← colección más clara
 
 	// Inyectar dependencias
 	repo := repository.NewTaskRepository(collection)

@@ -1,0 +1,41 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        stage('Build Backend') {
+            steps {
+                dir('backend') {
+                    sh 'docker compose -f ../deployment/docker-compose.yml build backend'
+                }
+            }
+        }
+        stage('Build Frontend') {
+            steps {
+                dir('frontend') {
+                    sh 'docker compose -f ../deployment/docker-compose.yml build frontend'
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                sh 'docker compose -f deployment/docker-compose.yml down || true'
+                sh 'docker compose -f deployment/docker-compose.yml up -d --build'
+                echo '🚀 Aplicación desplegada correctamente'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline exitoso'
+        }
+        failure {
+            echo 'Pipeline falló'
+        }
+    }
+}

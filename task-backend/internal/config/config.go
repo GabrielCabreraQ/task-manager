@@ -18,7 +18,8 @@ type ServerConfig struct {
 }
 
 type MongoConfig struct {
-	URI string
+	URI    string
+	DBName string
 }
 
 func Load() (*Config, error) {
@@ -28,27 +29,28 @@ func Load() (*Config, error) {
 
 	return &Config{
 		Server: ServerConfig{
-			Port: getEnv("PORT", "8080"),
+			Port: getEnv("PORT", ""),
 		},
 		MongoDB: MongoConfig{
-			URI: buildMongoURI(),
+			URI:    buildMongoURI(),
+			DBName: getEnv("DB_NAME", ""),
 		},
 	}, nil
 }
 
 // buildMongoURI mejorada con authSource
 func buildMongoURI() string {
-	//user := getEnv("DB_USER", "")
-	//password := getEnv("DB_PASSWORD", "")
-	dbName := getEnv("DB_NAME", "")
+	user := getEnv("DB_USER", "")
+	password := getEnv("DB_PASSWORD", "")
 	host := getEnv("DB_URL", "")
+	dbName := getEnv("DB_NAME", "")
 
-	// Si hay usuario y contraseña → autenticación
-	//if user != "" && password != "" {
-	//	return fmt.Sprintf("mongodb://%s:%s@%s/%s?authSource=admin", user, password, host, dbName)
-	//}
+	// Con autenticación (recomendado en producción)
+	if user != "" && password != "" {
+		return fmt.Sprintf("mongodb://%s:%s@%s/%s?authSource=admin", user, password, host, dbName)
+	}
 
-	// Sin autenticación
+	// Sin autenticación (ideal para desarrollo local)
 	return fmt.Sprintf("mongodb://%s/%s", host, dbName)
 }
 

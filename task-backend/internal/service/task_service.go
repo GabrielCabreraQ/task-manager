@@ -65,8 +65,6 @@ func (s *TaskService) FindByTag(ctx context.Context, tag string, page, limit int
 	return model.TaskList{
 		Tasks: tasks,
 		Total: total,
-		Page:  page,
-		Limit: limit,
 	}, nil
 }
 
@@ -80,8 +78,6 @@ func (s *TaskService) FindAll(ctx context.Context, page, limit int) (model.TaskL
 	return model.TaskList{
 		Tasks: tasks,
 		Total: total,
-		Page:  page,
-		Limit: limit,
 	}, nil
 }
 

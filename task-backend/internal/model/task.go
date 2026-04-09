@@ -13,7 +13,7 @@ type Task struct {
 	Description string             `json:"description" bson:"description"`
 	Completed   bool               `json:"completed" bson:"completed"`
 	CreatedAt   time.Time          `json:"createdAt" bson:"createdAt"`
-	UpdateAt    time.Time          `json:"updatedAt,omitempty" bson:"updatedAt,omitempty"`
+	UpdatedAt   time.Time          `json:"updatedAt,omitempty" bson:"updatedAt,omitempty"`
 	Tags        []string           `json:"tags,omitempty" bson:"tags,omitempty"`
 }
 
@@ -28,8 +28,6 @@ type CreateTask struct {
 type TaskList struct {
 	Tasks []Task `json:"tasks"`
 	Total int64  `json:"total"`
-	Page  int    `json:"page"`
-	Limit int    `json:"limit"`
 }
 
 // Para la actualización de tareas

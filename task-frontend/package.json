@@ -1,0 +1,24 @@
+{
+  "name": "tasks-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview"
+  },
+  "dependencies": {
+    "nuxt": "^3.11.0",
+    "vue": "^3.4.0",
+    "axios": "^1.6.0",
+    "@pinia/nuxt": "^0.5.1",
+    "pinia": "^2.1.7",
+    "bulma": "^1.0.0",
+    "@fortawesome/fontawesome-free": "^6.5.1"
+  },
+  "devDependencies": {
+    "@nuxt/devtools": "latest",
+    "sass": "^1.70.0"
+  }
+}

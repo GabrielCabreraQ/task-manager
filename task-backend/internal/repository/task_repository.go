@@ -32,9 +32,18 @@ func NewTaskRepository(collection *mongo.Collection) *taskRepository {
 
 func (t *taskRepository) CreateTask(ctx context.Context, task *model.Task) error {
 	task.CreatedAt = time.Now()
-	task.UpdateAt = time.Now()
-	_, err := t.collection.InsertOne(ctx, task)
-	return err
+	task.UpdatedAt = time.Now()
+
+	result, err := t.collection.InsertOne(ctx, task)
+	if err != nil {
+		return err
+	}
+
+	if oid, ok := result.InsertedID.(primitive.ObjectID); ok {
+		task.ID = oid
+	}
+
+	return nil
 }
 
 func (t *taskRepository) FindByID(ctx context.Context, id primitive.ObjectID) (*model.Task, error) {
