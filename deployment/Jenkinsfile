@@ -3,8 +3,6 @@ pipeline {
 
     environment {
         DOCKER_CREDENTIALS = credentials('docker-credentials')
-        IMAGE_BACKEND      = "gabrielcq/task-backend"
-        IMAGE_FRONTEND     = "gabrielcq/task-frontend"
     }
 
     stages {
@@ -16,13 +14,13 @@ pipeline {
 
         stage('Build Backend') {
             steps {
-                bat "docker build -t ${IMAGE_BACKEND}:latest -f task-backend/Dockerfile task-backend/"
+                bat 'docker build -t gabrielcq/task-backend:latest -f task-backend/Dockerfile task-backend/'
             }
         }
 
         stage('Build Frontend') {
             steps {
-                bat "docker build -t ${IMAGE_FRONTEND}:latest -f task-frontend/Dockerfile task-frontend/"
+                bat 'docker build -t gabrielcq/task-frontend:latest -f task-frontend/Dockerfile task-frontend/'
             }
         }
 
@@ -34,8 +32,8 @@ pipeline {
 
         stage('Push Images') {
             steps {
-                bat "docker push ${IMAGE_BACKEND}:latest"
-                bat "docker push ${IMAGE_FRONTEND}:latest"
+                bat 'docker push gabrielcq/task-backend:latest'
+                bat 'docker push gabrielcq/task-frontend:latest'
             }
         }
 
@@ -49,13 +47,10 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline completado con éxito'
+            echo 'Pipeline completado'
         }
         failure {
-            echo 'Pipeline falló'
-        }
-        always {
-            bat 'docker logout || true'
+            echo 'Pipeline error'
         }
     }
 }
