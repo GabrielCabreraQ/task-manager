@@ -39,9 +39,7 @@ pipeline {
 
         stage('Push images to docker hub') {
             steps {
-                bat "docker push ${IMAGE_BACKEND}:${TAG}"
                 bat "docker push ${IMAGE_BACKEND}:latest"
-                bat "docker push ${IMAGE_FRONTEND}:${TAG}"
                 bat "docker push ${IMAGE_FRONTEND}:latest"
             }
         }
