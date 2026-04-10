@@ -43,7 +43,6 @@ task-manager/
 │   ├── .gitignore
 │   ├── Dockerfile
 │   ├── LICENSE
-│   ├── README.md
 │   ├── dockerfile
 │   ├── go.mod
 │   ├── go.sum
@@ -65,7 +64,6 @@ task-manager/
 ├── task-frontend/
 │   ├── .gitignore
 │   ├── Dockerfile
-│   ├── README.md
 │   ├── nuxt.config.js
 │   ├── package-lock.json
 │   ├── package.json
@@ -107,12 +105,13 @@ Si todavía no tienes el proyecto en tu máquina, clona el repositorio y entra e
 
 ```bash
 git clone https://github.com/GabrielCabreraQ/task-manager
+
 cd task-manager
 ```
 
 Si ya tienes el repositorio clonado, ve a `task-manager`.
 
-## Ejecutar el proyecto localmente con Docker
+## Ejecutar el proyecto localmente solo con Docker
 
 1. Desde la dirección (`task-manager/deployment`):
 
@@ -125,9 +124,31 @@ docker-compose up --build
 - Frontend: `http://localhost:3000`
 - Backend: `http://localhost:8080`
 
-## Ejecutar backend localmente
+## Ejecución local sin docker
 
-1. Copia o crea un archivo `.env` dentro de `task-backend/` con las variables necesarias:
+Se necesitan 3 terminales abiertas en paralelo: Una para MongoDB, una para el backend y otra para el frontend.
+
+### Terminal MongoDB
+
+Ejecutar MongoDB desde la carpeta de instalación, por ejemplo:
+
+```
+"C:\Program Files\MongoDB\Server\8.0\bin\mongod.exe" --dbpath "C:\data\db"
+```
+
+Verifica que MongoDB está corriendo conectándote con `mongosh` en otra terminal, esto debería mostrar la consola de MongoDB sin errores. MongoDB queda escuchando en: 
+```
+mongodb://localhost:27017
+```
+
+### Terminal backend
+
+1. Entra en la carpeta del backend
+```
+cd task-manager/task-backend
+```
+
+2. Crea el archivo `.env` y copia lo siguiente:
 
 ```env
 PORT=8080
@@ -136,31 +157,46 @@ DB_NAME=taskmanager
 DB_USER=
 DB_PASSWORD=
 ```
-2. Se debe tener la aplicación de MongoDB abierto para realizar la conección directa entre el backend y la base de datos.
+Guarda el archivo en la dirección: `task-manager/task-backend/`
 
-3. Ejecuta desde `task-backend/`:
+3. Descarga las dependencias de go:
+```
+go mod tidy
+```
 
-```bash
+4. Ejecuta el backend desde `task-backend/`:
+
+```
 go run ./cmd/main.go
 ```
 
-## Ejecutar frontend localmente
+El backend quedará corriendo en la url: `http://localhost:8080`
 
-1. Instala dependencias desde `task-frontend/`:
+### Terminal frontend
 
-```bash
+1. Entra en la carpeta del frontend 
+
+```
+cd task-manager/task-frontend
+```
+
+2. Instala dependencias desde `task-frontend/`:
+
+```
 npm install
 ```
 
-2. Inicia el frontend:
+3. Inicia el frontend:
 
-```bash
+```
 npm run dev
 ```
 
+El frontend quedará corriendo en la url `http://localhost:3000` en el navegador. La aplicación debe cargar y mostrar las tareas desde MongoDB.
+
 ## Notas de implementación
 
-- El backend organiza el código en capas: controlador, modelo, repositorio y servicio.
+- El backend organiza el código en capas: handler, service, repository y model.
 - El router usa middleware básico de CORS para permitir peticiones desde el frontend.
 - La configuración se carga desde variables de entorno con soporte `.env`.
 - Los modelos usan MongoDB `ObjectID` para identificar tareas.
