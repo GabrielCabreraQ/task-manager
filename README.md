@@ -4,31 +4,31 @@ Aplicación web para la gestión de tareas diseñada para un entorno full-stack.
 
 ## Descripción del proyecto
 
-Task Manager es una aplicación que permite crear, consultar, actualizar, eliminar y marcar tareas como completadas. El proyecto cuenta con una API REST en Go que persiste datos en MongoDB, y una interfaz de usuario construida con Nuxt 3 y Vue 3.
+Task Manager es una aplicación que permite crear, consultar, actualizar, eliminar y marcar tareas como completadas. El proyecto cuenta con una API REST en Go que persiste datos en MongoDB, y una interfaz de usuario construida con Nuxt3 y Vue3.
 
 Este repositorio está preparado para ejecución local, desarrollo con Docker y despliegue en entornos controlados.
 
 ## Tecnologías utilizadas
 
 - **Backend**: Go, Gin
-- **Frontend**: Nuxt 3, Vue 3
+- **Frontend**: Nuxt3, Vue3
 - **Base de datos**: MongoDB
 - **Contenedores**: Docker, Docker Compose
 - **CI/CD**: Jenkins
 - **Validación**: validator.v10
 - **Configuración**: godotenv
-
+- **Editor de código**: VS code
 ## Características principales
 
-- Creación de tareas con título, descripción y etiquetas
-- Obtención de tareas paginadas
-- Búsqueda de tareas por etiqueta
-- Consulta de tarea individual por ID
-- Actualización de datos de tareas
-- Eliminación de tareas
-- Marcado de tareas como completadas
-- Configuración por variables de entorno
-- Estructura separada de backend, frontend y base de datos
+- Creación de tareas con título, descripción y etiquetas.
+- Obtención de tareas paginadas.
+- Búsqueda de tareas por etiqueta.
+- Consulta de tarea individual por ID.
+- Actualización de datos de tareas.
+- Eliminación de tareas.
+- Marcado de tareas como completadas.
+- Configuración por variables de entorno.
+- Estructura separada de backend, frontend y base de datos.
 
 ## Estructura del proyecto
 
@@ -101,7 +101,7 @@ task-manager/
 
 ## Clonar el repositorio
 
-Si todavía no tienes el proyecto en tu máquina, clona el repositorio y entra en la carpeta raíz:
+Si todavía no tienes el proyecto en tu disco, clona el repositorio y entra en la carpeta raíz:
 
 ```bash
 git clone https://github.com/GabrielCabreraQ/task-manager
@@ -132,19 +132,24 @@ Se necesitan 3 terminales abiertas en paralelo: Una para MongoDB, una para el ba
 
 Ejecutar MongoDB desde la carpeta de instalación, por ejemplo:
 
-```
+```powershell
+# Crear la carpeta donde se guardarán los datos (solo la primera vez)
+mkdir C:\data\db -Force
+
+# Iniciar MongoDB (No cerrar)
 "C:\Program Files\MongoDB\Server\8.0\bin\mongod.exe" --dbpath "C:\data\db"
 ```
 
 Verifica que MongoDB está corriendo conectándote con `mongosh` en otra terminal, esto debería mostrar la consola de MongoDB sin errores. MongoDB queda escuchando en: 
-```
+
+```powershell
 mongodb://localhost:27017
 ```
 
 ### Terminal powershell para backend
 
 1. Entra en la carpeta del backend desde la raiz `task-manager/`
-```
+```bash
 cd task-backend
 ```
 
@@ -160,13 +165,13 @@ DB_PASSWORD=
 Guarda el archivo en la dirección: `task-manager/task-backend/`
 
 3. Descarga las dependencias de go:
-```
+```bash
 go mod tidy
 ```
 
 4. Ejecuta el backend desde `task-backend/`:
 
-```
+```bash
 go run ./cmd/main.go
 ```
 
@@ -176,19 +181,19 @@ El backend quedará corriendo en la url: `http://localhost:8080`
 
 1. Entra en la carpeta del frontend desde la raiz `task-manager/`
 
-```
+```bash
 cd task-frontend
 ```
 
 2. Instala dependencias desde `task-frontend/`:
 
-```
+```bash
 npm install
 ```
 
 3. Inicia el frontend:
 
-```
+```bash
 npm run dev
 ```
 
