@@ -128,7 +128,7 @@ docker-compose up --build
 
 Se necesitan 3 terminales abiertas en paralelo: Una para MongoDB, una para el backend y otra para el frontend.
 
-### Terminal MongoDB
+### Terminal cmd para MongoDB
 
 Ejecutar MongoDB desde la carpeta de instalación, por ejemplo:
 
@@ -141,11 +141,11 @@ Verifica que MongoDB está corriendo conectándote con `mongosh` en otra termina
 mongodb://localhost:27017
 ```
 
-### Terminal backend
+### Terminal powershell para backend
 
-1. Entra en la carpeta del backend
+1. Entra en la carpeta del backend desde la raiz `task-manager/`
 ```
-cd task-manager/task-backend
+cd task-backend
 ```
 
 2. Crea el archivo `.env` y copia lo siguiente:
@@ -172,12 +172,12 @@ go run ./cmd/main.go
 
 El backend quedará corriendo en la url: `http://localhost:8080`
 
-### Terminal frontend
+### Terminal powershell para frontend
 
-1. Entra en la carpeta del frontend 
+1. Entra en la carpeta del frontend desde la raiz `task-manager/`
 
 ```
-cd task-manager/task-frontend
+cd task-frontend
 ```
 
 2. Instala dependencias desde `task-frontend/`:
@@ -194,10 +194,24 @@ npm run dev
 
 El frontend quedará corriendo en la url `http://localhost:3000` en el navegador. La aplicación debe cargar y mostrar las tareas desde MongoDB.
 
-## Notas de implementación
+## Endpoints de la API
 
-- El backend organiza el código en capas: handler, service, repository y model.
-- El router usa middleware básico de CORS para permitir peticiones desde el frontend.
-- La configuración se carga desde variables de entorno con soporte `.env`.
-- Los modelos usan MongoDB `ObjectID` para identificar tareas.
+| Método     | Endpoint                     | Descripción                                      | Ejemplo |
+|------------|------------------------------|--------------------------------------------------|---------|
+| `POST`     | `/tasks`                     | Crear una nueva tarea                            | Ver ejemplos abajo |
+| `GET`      | `/tasks`                     | Obtener todas las tareas (paginadas)             | `?page=1&limit=50` |
+| `GET`      | `/tasks/:id`                 | Obtener una tarea por ID                         | `/tasks/69d87f428eb9fcdb6041d329` |
+| `PUT`      | `/tasks/:id`                 | Actualizar una tarea                             |  |
+| `PUT`      | `/tasks/:id/complete`        | Marcar tarea como completada                     | Solo método PUT |
+| `DELETE`   | `/tasks/:id`                 | Eliminar una tarea                               | `/tasks/69d87f428eb9fcdb6041d329` |
+| `GET`      | `/tasks/tag/:tag`            | Buscar tareas por etiqueta                       | `/tasks/tag/trabajo` |
 
+Ejemlo de creación de tarea
+```
+'{
+    "title": "Terminar informe mensual",
+    "description": "Incluye gráficos y resumen ejecutivo",
+    "tags": ["trabajo", "urgente"]
+  }'
+
+```

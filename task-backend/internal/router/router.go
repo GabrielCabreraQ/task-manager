@@ -28,6 +28,7 @@ func SetupRouter(h *handler.TaskHandler) *gin.Engine {
 		tasks.POST("", h.CreateTask)                // Crea una nueva tarea.
 		tasks.GET("", h.GetAllTasks)                // Obtiene todas las tareas.
 		tasks.GET("/:id", h.GetTaskByID)            // Obtiene una tarea por su ID.
+		tasks.GET("/:id/complete", h.MarkCompleted) // para usarlo en dirección 8080
 		tasks.PUT("/:id/complete", h.MarkCompleted) // Marca una tarea como completada.
 		tasks.DELETE("/:id", h.DeleteTask)          // Elimina una tarea.
 		tasks.PUT("/:id", h.UpdateTask)             // Actualiza una tarea existente.
