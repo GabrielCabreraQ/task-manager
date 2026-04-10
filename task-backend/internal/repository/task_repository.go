@@ -16,11 +16,11 @@ import (
 type TaskRepository interface {
 	CreateTask(ctx context.Context, task *model.Task) error
 	FindByID(ctx context.Context, id primitive.ObjectID) (*model.Task, error)
-	MarkCompleted(ctx context.Context, id primitive.ObjectID) error
+	MarkCompleted(ctx context.Context, id primitive.ObjectID) (*model.Task, error)
 	Delete(ctx context.Context, id primitive.ObjectID) error
 	UpdateTask(ctx context.Context, id primitive.ObjectID, update *model.UpdateTask) error
 	FindByTag(ctx context.Context, tag string, page, limit int) ([]model.Task, int64, error)
-	FindAll(ctx context.Context, page int, limit int) ([]model.Task, int64, error)
+	FindAll(ctx context.Context, page, limit int, completed *bool) ([]model.Task, int64, error)
 }
 
 type taskRepository struct {
@@ -65,22 +65,21 @@ func (t *taskRepository) Delete(ctx context.Context, id primitive.ObjectID) erro
 	return err
 }
 
-// MarkCompleted marca la tarea como completada estableciendo su campo completed en true.
-func (t *taskRepository) MarkCompleted(ctx context.Context, id primitive.ObjectID) error {
-
-	// Actualiza el campo completed a true para marcar la tarea como terminada.
+// MarkCompleted marca la tarea como completada y devuelve la tarea actualizada.
+func (t *taskRepository) MarkCompleted(ctx context.Context, id primitive.ObjectID) (*model.Task, error) {
 	_, err := t.collection.UpdateOne(
 		ctx,
 		bson.M{"_id": id},
-		bson.M{"$set": bson.M{"completed": true}},
+		bson.M{"$set": bson.M{"completed": true, "updatedAt": time.Now()}},
 	)
-	return err
+	if err != nil {
+		return nil, err
+	}
+	return t.FindByID(ctx, id)
 }
 
-// FindAll devuelve un listado paginado de tareas ordenadas por fecha de creación descendente y el total de tareas.
-func (t *taskRepository) FindAll(ctx context.Context, page, limit int) ([]model.Task, int64, error) {
-
-	// Normaliza los parámetros de paginación.
+// FindAll devuelve un listado paginado de tareas con filtro opcional por estado.
+func (t *taskRepository) FindAll(ctx context.Context, page, limit int, completed *bool) ([]model.Task, int64, error) {
 	if page < 1 {
 		page = 1
 	}
@@ -88,16 +87,20 @@ func (t *taskRepository) FindAll(ctx context.Context, page, limit int) ([]model.
 		limit = 10
 	}
 
-	// Calcula cuántos documentos se deben omitir según la página.
 	skip := int64((page - 1) * limit)
+
+	// Construir filtro — si completed es nil se traen todas las tareas
+	filter := bson.D{}
+	if completed != nil {
+		filter = bson.D{{Key: "completed", Value: *completed}}
+	}
 
 	opts := options.Find().
 		SetSkip(skip).
 		SetLimit(int64(limit)).
 		SetSort(bson.D{{Key: "createdAt", Value: -1}})
 
-	// Busca todas las tareas con paginación y orden descendente por creación.
-	cursor, err := t.collection.Find(ctx, bson.D{}, opts)
+	cursor, err := t.collection.Find(ctx, filter, opts)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -108,41 +111,13 @@ func (t *taskRepository) FindAll(ctx context.Context, page, limit int) ([]model.
 		return nil, 0, err
 	}
 
-	// Calcula el total de tareas sin paginación para el frontend.
-	total, err := t.collection.CountDocuments(ctx, bson.D{})
+	// El total respeta el mismo filtro para que la paginación sea correcta
+	total, err := t.collection.CountDocuments(ctx, filter)
 	if err != nil {
 		return nil, 0, err
 	}
 
 	return tasks, total, nil
-}
-
-// UpdateTask actualiza los campos proporcionados de una tarea existente y registra la fecha de modificación.
-func (t *taskRepository) UpdateTask(ctx context.Context, id primitive.ObjectID, update *model.UpdateTask) error {
-	updateFields := bson.M{
-		"updatedAt": time.Now(), // Registramos cuándo se modificó
-	}
-
-	if update.Title != "" {
-		updateFields["title"] = update.Title
-	}
-	if update.Description != "" {
-		updateFields["description"] = update.Description
-	}
-	if update.Tags != nil {
-		updateFields["tags"] = update.Tags
-	}
-	if update.Completed != nil {
-		updateFields["completed"] = *update.Completed
-	}
-
-	// Aplica el conjunto de campos actualizados en la tarea indicada.
-	_, err := t.collection.UpdateOne(
-		ctx,
-		bson.M{"_id": id},
-		bson.M{"$set": updateFields},
-	)
-	return err
 }
 
 // FindByTag busca tareas que contienen la etiqueta indicada y devuelve resultados paginados junto con el total.
@@ -181,4 +156,31 @@ func (t *taskRepository) FindByTag(ctx context.Context, tag string, page, limit 
 	// Devuelve el total de tareas que coinciden con la etiqueta para paginación.
 	total, _ := t.collection.CountDocuments(ctx, filter)
 	return tasks, total, nil
+}
+
+// UpdateTask actualiza los campos proporcionados de una tarea existente.
+func (t *taskRepository) UpdateTask(ctx context.Context, id primitive.ObjectID, update *model.UpdateTask) error {
+	updateFields := bson.M{
+		"updatedAt": time.Now(),
+	}
+
+	if update.Title != "" {
+		updateFields["title"] = update.Title
+	}
+	if update.Description != "" {
+		updateFields["description"] = update.Description
+	}
+	if update.Tags != nil {
+		updateFields["tags"] = update.Tags
+	}
+	if update.Completed != nil {
+		updateFields["completed"] = *update.Completed
+	}
+
+	_, err := t.collection.UpdateOne(
+		ctx,
+		bson.M{"_id": id},
+		bson.M{"$set": updateFields},
+	)
+	return err
 }

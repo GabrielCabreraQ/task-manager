@@ -53,21 +53,32 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 	c.JSON(http.StatusCreated, task)
 }
 
-// GetAllTasks devuelve la lista paginada de tareas.
+// GetAllTasks devuelve la lista paginada de tareas con filtro opcional por estado.
 func (h *TaskHandler) GetAllTasks(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 
-	// Seguridad: evitar valores inválidos.
 	if page < 1 {
 		page = 1
 	}
-	if limit < 1 || limit > 100 { // máximo 100 tareas por página
+	if limit < 1 {
 		limit = 10
 	}
+	// Sin límite máximo — el frontend controla cuántas mostrar
+	if limit > 10000 {
+		limit = 10000
+	}
 
-	// Solicita al servicio todos los registros con paginación.
-	result, err := h.service.FindAll(c.Request.Context(), page, limit)
+	// Filtro opcional por estado: ?completed=true | ?completed=false | (ausente = todos)
+	var completed *bool
+	if val := c.Query("completed"); val != "" {
+		b, err := strconv.ParseBool(val)
+		if err == nil {
+			completed = &b
+		}
+	}
+
+	result, err := h.service.FindAll(c.Request.Context(), page, limit, completed)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -94,14 +105,13 @@ func (h *TaskHandler) GetTaskByID(c *gin.Context) {
 func (h *TaskHandler) MarkCompleted(c *gin.Context) {
 	id := c.Param("id")
 
-	// Marca la tarea como completada a través del servicio.
-	err := h.service.MarkCompleted(c.Request.Context(), id)
+	task, err := h.service.MarkCompleted(c.Request.Context(), id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Tarea marcada como completada correctamente"})
+	c.JSON(http.StatusOK, task)
 }
 
 // DeleteTask elimina una tarea por ID.

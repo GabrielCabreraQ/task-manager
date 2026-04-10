@@ -212,7 +212,10 @@ import { useToastStore  } from "~/store/toast";
 const tasksStore = useTasksStore();
 const toastStore = useToastStore();
 
-onMounted(() => tasksStore.fetchTasks());
+onMounted(async () => {
+  await tasksStore.fetchTasks();
+  tasksStore.fetchGlobalStats(); // stats globales del navbar
+});
 
 // ─── Filtros UI ───────────────────────────────────────────────────────────
 const filters = [

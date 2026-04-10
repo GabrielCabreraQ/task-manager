@@ -77,9 +77,9 @@ func (s *TaskService) FindByTag(ctx context.Context, tag string, page, limit int
 	}, nil
 }
 
-// FindAll obtiene todas las tareas con paginación
-func (s *TaskService) FindAll(ctx context.Context, page, limit int) (model.TaskList, error) {
-	tasks, total, err := s.repository.FindAll(ctx, page, limit)
+// FindAll obtiene tareas paginadas con filtro opcional por estado (completed).
+func (s *TaskService) FindAll(ctx context.Context, page, limit int, completed *bool) (model.TaskList, error) {
+	tasks, total, err := s.repository.FindAll(ctx, page, limit, completed)
 	if err != nil {
 		return model.TaskList{}, errors.New("error al obtener las tareas")
 	}
@@ -107,19 +107,19 @@ func (s *TaskService) FindByID(ctx context.Context, id string) (*model.Task, err
 	return task, nil
 }
 
-// MarkCompleted marca una tarea como completada
-func (s *TaskService) MarkCompleted(ctx context.Context, id string) error {
+// MarkCompleted marca una tarea como completada y devuelve la tarea actualizada.
+func (s *TaskService) MarkCompleted(ctx context.Context, id string) (*model.Task, error) {
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return errors.New("ID de tarea inválido")
+		return nil, errors.New("ID de tarea inválido")
 	}
 
-	err = s.repository.MarkCompleted(ctx, objectID)
+	task, err := s.repository.MarkCompleted(ctx, objectID)
 	if err != nil {
-		return errors.New("error al actualizar la tarea")
+		return nil, errors.New("error al actualizar la tarea")
 	}
 
-	return nil
+	return task, nil
 }
 
 // Delete valida el ID y elimina la tarea correspondiente.
